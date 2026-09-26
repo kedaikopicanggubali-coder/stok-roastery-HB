@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1A1A2E">
+<title>Stok Roastery · Hungry Bird</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#1A1A2E; --paper:#F5F6F8; --card:#FFFFFF; --ink:#1B2440; --muted:#6A7185; --line:#DCE0E8;
+  --ok:#1E7B4F; --warn:#B23B2A; --low:#C58A12; --low-soft:#FBF1DC; --edit-soft:#EAF0FF; --edit:#3D5AFE;
+  --area:#1A1A2E;
+  --font:'Atkinson Hyperlegible',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{font-family:var(--font);background:var(--paper);color:var(--ink);font-size:16px;line-height:1.4;-webkit-tap-highlight-color:transparent}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid #6C8CFF;outline-offset:2px}
+.hidden{display:none!important}
+.wrap{max-width:640px;margin:0 auto}
+
+/* Login */
+#login{min-height:100%;display:flex;flex-direction:column;justify-content:center;padding:32px 24px;
+  padding-top:calc(32px + env(safe-area-inset-top));background:var(--navy);color:#fff}
+#login .wrap{width:100%}
+#login h1{font-size:30px;line-height:1.1;margin:0 0 6px}
+#login p{margin:0 0 28px;color:#B9C0D4}
+#login label{display:block;font-size:14px;color:#B9C0D4;margin:16px 0 6px}
+#login input{width:100%;padding:14px;border-radius:10px;border:0;font-size:18px;color:var(--ink)}
+#login button{margin-top:28px;width:100%;padding:16px;border:0;border-radius:10px;background:#fff;color:var(--navy);font-weight:700;font-size:18px}
+#loginErr{color:#FFB4A8;margin-top:14px;min-height:22px}
+
+/* Header */
+header{position:sticky;top:0;z-index:5;background:var(--area);color:#fff;padding:calc(12px + env(safe-area-inset-top)) 16px 14px;transition:background .25s}
+.top{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.top h1{font-size:19px;margin:0}
+.link{background:none;border:0;color:#fff;opacity:.85;padding:6px 0;font-size:15px;text-decoration:underline;text-underline-offset:3px}
+.back{background:none;border:0;color:#fff;font-size:16px;padding:6px 10px 6px 0;font-weight:700}
+.mode{display:grid;grid-template-columns:1fr 1fr;margin-top:12px;background:rgba(0,0,0,.25);border-radius:12px;padding:4px}
+.mode button{border:0;background:none;color:#fff;padding:11px 8px;border-radius:9px;font-weight:700;font-size:16px;opacity:.75}
+.mode button[aria-pressed="true"]{background:#fff;color:var(--area);opacity:1}
+.row .ket{font-size:13px;color:var(--area);font-weight:700}
+.row .inToday{font-size:13px;color:#0F5132;font-weight:700}
+.dates{display:flex;gap:8px;margin-top:12px}
+.dates button{flex:1;border:0;border-radius:10px;padding:10px 6px;background:rgba(255,255,255,.14);color:#fff;font-size:15px}
+.dates button[aria-pressed="true"]{background:#fff;color:var(--area);font-weight:700}
+.prog{margin-top:12px;height:8px;border-radius:99px;background:rgba(255,255,255,.2);overflow:hidden}
+.prog i{display:block;height:100%;background:#fff;border-radius:99px;transition:width .3s}
+.progTxt{font-size:14px;opacity:.9;margin-top:6px}
+
+/* Home areas */
+#home{padding:16px}
+.areaCard{width:100%;display:flex;justify-content:space-between;align-items:center;gap:12px;text-align:left;border:0;
+  border-radius:14px;padding:20px 18px;margin-bottom:12px;color:#fff}
+.areaCard h2{margin:0;font-size:24px}
+.areaCard small{display:block;opacity:.85;font-size:15px;margin-top:2px}
+.areaCard .num{font-size:22px;font-weight:700;white-space:nowrap}
+.areaCard .num.done::before{content:"✓ "}
+.hint{color:var(--muted);font-size:14px;padding:4px 2px 12px}
+
+/* Area list */
+.tools{position:sticky;z-index:4;background:var(--paper);padding:10px 16px;display:flex;gap:8px}
+.tools input{flex:1;min-width:0;padding:12px;border:1px solid var(--line);border-radius:10px;background:#fff;font-size:16px}
+.tools button{border:1px solid var(--line);background:#fff;border-radius:10px;padding:0 12px;font-size:14px;white-space:nowrap}
+.tools button[aria-pressed="true"]{background:var(--area);border-color:var(--area);color:#fff;font-weight:700}
+#list{padding:0 16px 130px}
+.sub{position:sticky;z-index:3;background:var(--paper);font-weight:700;font-size:14px;letter-spacing:.02em;
+  text-transform:uppercase;color:var(--area);padding:14px 2px 6px;border-bottom:2px solid var(--area)}
+.row{display:flex;align-items:center;gap:12px;background:var(--card);border-bottom:1px solid var(--line);padding:10px 8px 10px 10px}
+.row .info{flex:1;min-width:0}
+.row .nm{font-weight:700;overflow-wrap:anywhere}
+.row .sub2{font-size:13px;color:var(--muted)}
+.row .flag{font-size:13px;font-weight:700;color:var(--low)}
+.row .flag.bad{color:var(--warn)}
+.row input{width:96px;flex:none;text-align:right;font-size:20px;font-weight:700;padding:10px;border:1.5px solid var(--line);border-radius:10px;background:#fff}
+.row.filled input{border-color:#B9C7B9;background:#F3F8F4}
+.row.edited{background:var(--edit-soft)}
+.row.edited input{border-color:var(--edit);background:#fff}
+.empty{padding:40px 8px;color:var(--muted);text-align:center}
+
+/* Dock */
+.dock{position:fixed;left:0;right:0;bottom:0;z-index:6;background:var(--card);border-top:1px solid var(--line);
+  padding:12px 16px calc(12px + env(safe-area-inset-bottom))}
+.dock .wrap{display:flex;gap:10px;align-items:center}
+.dock .count{flex:1;font-size:15px;color:var(--muted)}
+.dock .count b{color:var(--ink)}
+.btn{border:0;border-radius:10px;padding:14px 18px;font-weight:700;font-size:17px}
+.btn.primary{background:var(--area);color:#fff}
+.btn.ghost{background:none;border:1px solid var(--line)}
+.btn:disabled{opacity:.4}
+
+/* Save sheet */
+.scrim{position:fixed;inset:0;background:rgba(27,36,64,.45);z-index:10;display:flex;align-items:flex-end;justify-content:center}
+.sheet{background:var(--card);width:100%;max-width:640px;max-height:92%;overflow:auto;border-radius:16px 16px 0 0;
+  padding:20px 16px calc(20px + env(safe-area-inset-bottom));animation:up .2s ease-out}
+@keyframes up{from{transform:translateY(24px);opacity:.6}to{transform:none;opacity:1}}
+@media (prefers-reduced-motion:reduce){.sheet{animation:none}header,.prog i{transition:none}}
+.sheet h2{margin:0 0 4px;font-size:21px}
+.sheet .meta{color:var(--muted);font-size:15px}
+.field{margin-top:16px}
+.field label{display:block;font-size:14px;color:var(--muted);margin-bottom:6px}
+.field input{width:100%;padding:12px;border:1px solid var(--line);border-radius:10px;font-size:17px}
+.errTxt{color:var(--warn);font-size:14px;margin-top:6px;min-height:18px}
+.warnBox{background:var(--low-soft);color:#7A5305;border-radius:8px;padding:10px 12px;font-size:15px;margin-top:12px}
+.actions{display:grid;grid-template-columns:1fr 2fr;gap:10px;margin-top:18px}
+
+#toast{position:fixed;left:16px;right:16px;bottom:calc(92px + env(safe-area-inset-bottom));z-index:20;max-width:600px;margin:0 auto;
+  background:var(--navy);color:#fff;border-radius:10px;padding:14px 16px;font-size:16px;text-align:center}
+#toast.err{background:var(--warn)}
+.loading{padding:40px;text-align:center;color:var(--muted)}
+</style>
+</head>
+<body>
+
+<section id="login" class="hidden"><div class="wrap">
+  <h1>Stok Roastery</h1>
+  <p>Hungry Bird Roastery · stok opname & barang masuk</p>
+  <label for="inPin">PIN roastery</label>
+  <input id="inPin" inputmode="numeric" type="password" placeholder="4 digit dari supervisor">
+  <button id="btnLogin">Masuk</button>
+  <div id="loginErr" role="alert"></div>
+</div></section>
+
+<section id="app" class="hidden">
+  <header><div class="wrap">
+    <div class="top">
+      <button class="back hidden" id="btnBack">‹ Area</button>
+      <h1 id="title">Stok Roastery</h1>
+      <button class="link" id="btnOut">Keluar</button>
+    </div>
+    <div class="mode" role="group" aria-label="Jenis input">
+      <button id="mOp" aria-pressed="true">Stok opname</button>
+      <button id="mIn" aria-pressed="false">Barang masuk</button>
+    </div>
+    <div class="dates" id="dates" role="group" aria-label="Tanggal"></div>
+    <div id="progWrap" class="hidden">
+      <div class="prog"><i id="progBar" style="width:0"></i></div>
+      <div class="progTxt" id="progTxt"></div>
+    </div>
+  </div></header>
+
+  <div id="home" class="wrap">
+    <div class="hint" id="homeHint">Pilih area yang mau diisi.</div>
+    <div id="areaCards"><div class="loading">Memuat…</div></div>
+  </div>
+
+  <div id="areaView" class="hidden">
+    <div class="tools wrap">
+      <input id="inSearch" type="search" placeholder="Cari item…" autocomplete="off">
+      <button id="btnTodo" aria-pressed="false">Belum diisi</button>
+    </div>
+    <div id="list" class="wrap"></div>
+    <div class="dock"><div class="wrap">
+      <div class="count" id="dockTxt"></div>
+      <button class="btn primary" id="btnSave" disabled>Simpan</button>
+    </div></div>
+  </div>
+</section>
+
+<div class="scrim hidden" id="saveScrim">
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="saveTitle">
+    <h2 id="saveTitle">Simpan</h2>
+    <div class="meta" id="saveMeta"></div>
+    <div class="warnBox hidden" id="saveWarn"></div>
+    <div class="field">
+      <label for="staffName">Nama kamu (dicatat di sheet)</label>
+      <input id="staffName" autocomplete="off" placeholder="mis. Wayan">
+      <div class="errTxt" id="staffErr" role="alert"></div>
+    </div>
+    <div class="field" id="catField">
+      <label for="catatan">Catatan (opsional)</label>
+      <input id="catatan" autocomplete="off" placeholder="mis. hasil roast batch 2, kiriman supplier">
+    </div>
+    <div class="actions">
+      <button class="btn ghost" id="saveBack">Kembali</button>
+      <button class="btn primary" id="saveGo">Simpan ke sheet</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="hidden" role="status"></div>
+
+<script>
+/* ================== KONFIGURASI ================== */
+const API_URL = 'https://script.google.com/macros/s/AKfycbyjTaAqgkREVTNFNcB9l8v4uT3HtZ7ucNfbLMDAhz60WVUB_IPvdL21pGvpoh0MdSHj1Q/exec'; // https://script.google.com/macros/s/..../exec
+const AREA_COLORS = { 'Beans Espresso': '#1A3C6E', 'Beans Filter': '#533483', 'Packaging & Supplies': '#1B4332', 'Sticker & Label': '#7C2D12' };
+const IN_COLOR = '#0F5132';
+/* ================================================= */
+
+const $ = id => document.getElementById(id);
+const LS = { pin: 'hbrs_pin', name: 'hbrs_name' };
+const state = { data: null, today: '', date: '', mode: 'OP', area: null, edits: {}, onlyTodo: false, sid: newSid() };
+
+function newSid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2, 10); }
+function esc(s){ return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function num(v){ const t = String(v).trim().replace(',', '.'); if (t === '') return NaN; const n = Number(t); return isFinite(n) ? n : NaN; }
+function fmt(n){ if (n === null || n === undefined || n === '') return '–'; if (typeof n !== 'number') return String(n); return String(Math.round(n * 1000) / 1000).replace('.', ','); }
+function store(k, v){ try { v === null ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch(e){} }
+function load(k){ try { return localStorage.getItem(k) || ''; } catch(e){ return ''; } }
+function isoShift(iso, days){ const d = new Date(iso + 'T12:00:00'); d.setDate(d.getDate() + days); return d.toISOString().slice(0, 10); }
+const HARI = ['Min','Sen','Sel','Rab','Kam','Jum','Sab'];
+function dayLabel(iso){ const d = new Date(iso + 'T12:00:00'); return `${HARI[d.getDay()]} ${d.getDate()}/${d.getMonth()+1}`; }
+const has = (o, k) => Object.prototype.hasOwnProperty.call(o, k);
+
+/* ---------- Koneksi: fetch tanpa cookie (aman untuk browser multi-akun Google), cadangan JSONP ---------- */
+async function api(params){
+  const q = new URLSearchParams({ ...params, pin: load(LS.pin) });
+  let data;
+  try {
+    const ctrl = new AbortController(); const t = setTimeout(() => ctrl.abort(), 30000);
+    const res = await fetch(API_URL + '?' + q.toString(), { credentials: 'omit', redirect: 'follow', signal: ctrl.signal });
+    clearTimeout(t); data = await res.json();
+  } catch (e) { data = await apiJsonp(params); }
+  if (!data || !data.ok) throw new Error((data && data.error) || 'Gagal memproses.');
+  return data;
+}
+function apiJsonp(params){
+  return new Promise((resolve, reject) => {
+    const cb = 'cb_' + newSid(); const s = document.createElement('script');
+    const timer = setTimeout(() => { done(); reject(new Error('Koneksi lambat. Cek sinyal lalu coba lagi.')); }, 30000);
+    function done(){ clearTimeout(timer); delete window[cb]; s.remove(); }
+    window[cb] = d => { done(); resolve(d); };
+    s.onerror = () => { done(); reject(new Error('Tidak bisa terhubung ke server. Coba mode incognito.')); };
+    s.src = API_URL + '?' + new URLSearchParams({ ...params, pin: load(LS.pin), callback: cb }).toString();
+    document.body.appendChild(s);
+  });
+}
+function toast(msg, isErr){
+  const t = $('toast'); t.textContent = msg; t.className = isErr ? 'err' : '';
+  clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.add('hidden'), isErr ? 5000 : 3000);
+}
+function confirmDiscard(msg){ return !dirtyCount() || confirm(msg || 'Ada angka yang belum disimpan. Lanjutkan tanpa menyimpan?'); }
+
+/* ---------- Login ---------- */
+function showLogin(msg){ $('app').classList.add('hidden'); $('login').classList.remove('hidden'); $('inPin').value = ''; $('loginErr').textContent = msg || ''; }
+$('btnLogin').onclick = async () => {
+  const pin = $('inPin').value.trim();
+  if (!pin){ $('loginErr').textContent = 'Isi PIN dulu.'; return; }
+  store(LS.pin, pin); $('loginErr').textContent = 'Mengecek…';
+  try { await loadDate(''); $('login').classList.add('hidden'); $('app').classList.remove('hidden'); showHome(); }
+  catch(e){ store(LS.pin, null); showLogin(e.message); }
+};
+$('btnOut').onclick = () => { if (!confirmDiscard()) return; state.edits = {}; store(LS.pin, null); showLogin(); };
+
+/* ---------- Data ---------- */
+function book(){ return state.mode === 'IN' ? state.data.masuk : state.data.stok; }
+async function loadDate(iso){
+  const r = await api({ action: 'init', tanggal: iso });
+  state.data = r; state.today = r.today; state.date = r.tanggal; renderDates();
+}
+function renderDates(){
+  const opts = [0, -1, -2].map(d => isoShift(state.today, d)), names = ['Hari ini', 'Kemarin', '2 hari lalu'];
+  $('dates').innerHTML = opts.map((iso, i) => `<button data-iso="${iso}" aria-pressed="${iso === state.date}">${names[i]}<br><small>${dayLabel(iso)}</small></button>`).join('');
+}
+$('dates').addEventListener('click', async e => {
+  const b = e.target.closest('button'); if (!b || b.dataset.iso === state.date) return;
+  if (!confirmDiscard()) return;
+  state.edits = {}; state.sid = newSid();
+  const areaName = state.area && state.area.name;
+  try { await loadDate(b.dataset.iso); areaName ? openArea(areaName) : showHome(); }
+  catch(err){ toast(err.message, true); renderDates(); }
+});
+
+/* ---------- Mode ---------- */
+function setMode(m){
+  if (m === state.mode) return;
+  if (!confirmDiscard()) return;
+  state.mode = m; state.edits = {}; state.sid = newSid();
+  $('mOp').setAttribute('aria-pressed', m === 'OP'); $('mIn').setAttribute('aria-pressed', m === 'IN');
+  const areaName = state.area && state.area.name;
+  if (areaName && book() && book().areas.some(a => a.name === areaName)) openArea(areaName); else showHome();
+}
+$('mOp').onclick = () => setMode('OP');
+$('mIn').onclick = () => setMode('IN');
+
+function isDone(it){ return it.v !== null && it.v !== ''; }
+
+/* ---------- Home ---------- */
+function setColor(c){ document.documentElement.style.setProperty('--area', c); }
+function showHome(){
+  state.area = null;
+  setColor(state.mode === 'IN' ? IN_COLOR : '#1A1A2E');
+  $('title').textContent = 'Stok Roastery';
+  $('btnBack').classList.add('hidden'); $('progWrap').classList.add('hidden');
+  $('areaView').classList.add('hidden'); $('home').classList.remove('hidden');
+  const b = book();
+  if (!b){
+    $('homeHint').textContent = '';
+    $('areaCards').innerHTML = `<div class="empty">Sheet IN untuk bulan ini belum ada.<br>Minta supervisor jalankan PO Tools → Generate Sheet Bulan Berikutnya.</div>`;
+    return;
+  }
+  $('homeHint').textContent = state.mode === 'IN'
+    ? `Barang masuk / hasil produksi · ${dayLabel(state.date)} · sheet "${b.sheet}". Pilih kategori.`
+    : `Stok opname · ${dayLabel(state.date)} · sheet "${b.sheet}". Pilih kategori.`;
+  $('areaCards').innerHTML = b.areas.map(a => {
+    const tot = a.items.length, f = a.items.filter(isDone).length;
+    const right = state.mode === 'IN'
+      ? `<span class="num">${f ? f + ' masuk' : '–'}</span>`
+      : `<span class="num${f === tot ? ' done' : ''}">${f}/${tot}</span>`;
+    return `<button class="areaCard" data-a="${esc(a.name)}" style="background:${state.mode === 'IN' ? IN_COLOR : (AREA_COLORS[a.name] || '#374151')}">
+      <span><h2>${esc(a.name)}</h2><small>${tot} item</small></span>${right}</button>`;
+  }).join('');
+}
+$('areaCards').addEventListener('click', e => { const b = e.target.closest('.areaCard'); if (b) openArea(b.dataset.a); });
+$('btnBack').onclick = () => { if (!confirmDiscard()) return; state.edits = {}; showHome(); };
+
+/* ---------- Area ---------- */
+function openArea(name){
+  const a = book().areas.find(x => x.name === name);
+  if (!a){ showHome(); return; }
+  state.area = a;
+  setColor(state.mode === 'IN' ? IN_COLOR : (AREA_COLORS[a.name] || '#374151'));
+  $('title').textContent = (state.mode === 'IN' ? 'Masuk · ' : '') + a.name;
+  $('btnBack').classList.remove('hidden'); $('progWrap').classList.remove('hidden');
+  $('home').classList.add('hidden'); $('areaView').classList.remove('hidden');
+  $('btnTodo').textContent = state.mode === 'IN' ? 'Sudah diisi' : 'Belum diisi';
+  $('inSearch').value = '';
+  renderList(); renderProgress();
+}
+function flagFor(it, raw){
+  const q = num(raw);
+  if (isNaN(q)) return raw && String(raw).trim() ? { t: 'Bukan angka', bad: true } : null;
+  if (state.mode === 'IN'){
+    if (q === 0) return { t: 'Qty masuk harus lebih dari 0', bad: true };
+    if (typeof it.max === 'number' && it.max > 0 && q > it.max * 5) return { t: `Cek lagi: jauh di atas Max (${fmt(it.max)})`, bad: true };
+    return null;
+  }
+  if (typeof it.prev === 'number' && it.prev >= 5 && q >= it.prev * 10) return { t: `Cek lagi: 10× dari terakhir (${fmt(it.prev)})`, bad: true };
+  if (typeof it.max === 'number' && it.max > 0 && q > it.max * 3) return { t: `Cek lagi: jauh di atas Max (${fmt(it.max)})`, bad: true };
+  if (typeof it.min === 'number' && q <= it.min) return { t: `Di bawah/sama Min (${fmt(it.min)}) → perlu order`, bad: false };
+  return null;
+}
+function rowHtml(it){
+  const edited = has(state.edits, it.n);
+  const isIn = state.mode === 'IN';
+  const shown = edited ? state.edits[it.n] : (isIn || it.v === null ? '' : fmt(it.v));
+  const fl = flagFor(it, shown);
+  const u = esc(it.u || '');
+  const line2 = isIn
+    ? `${u}${isDone(it) ? '' : ' · belum ada yang masuk'}`
+    : `${u} · ${it.prev !== null ? `terakhir ${fmt(it.prev)} (tgl ${it.prevDay})` : 'belum ada data sebelumnya'}`;
+  return `<div class="row${!isIn && isDone(it) ? ' filled' : ''}${edited ? ' edited' : ''}" data-n="${esc(it.n)}">
+    <div class="info"><div class="nm">${esc(it.n)}</div>
+      <div class="sub2">${line2}</div>
+      ${it.ket ? `<div class="ket">${esc(it.ket)}</div>` : ''}
+      ${isIn && isDone(it) ? `<div class="inToday">Sudah masuk ${dayLabel(state.date)}: ${fmt(it.v)} ${u}</div>` : ''}
+      <div class="flag${fl && fl.bad ? ' bad' : ''}">${fl ? esc(fl.t) : ''}</div></div>
+    <input inputmode="decimal" enterkeyhint="next" autocomplete="off" value="${esc(shown)}"
+      placeholder="${isIn ? '+ qty' : ''}" aria-label="${isIn ? 'Qty masuk' : 'Jumlah'} ${esc(it.n)} (${u})">
+  </div>`;
+}
+function renderList(){
+  const a = state.area, words = $('inSearch').value.trim().toLowerCase().split(/\s+/).filter(Boolean);
+  const items = a.items.filter(it => words.every(w => it.n.toLowerCase().includes(w)) &&
+    (!state.onlyTodo || has(state.edits, it.n) || (state.mode === 'IN' ? isDone(it) : !isDone(it))));
+  $('list').innerHTML = items.length ? items.map(rowHtml).join('')
+    : `<div class="empty">${state.onlyTodo ? (state.mode === 'IN' ? 'Belum ada barang masuk di kategori ini.' : 'Semua item sudah terisi. 👍') : 'Tidak ada item yang cocok.'}</div>`;
+  renderDock();
+}
+function renderProgress(){
+  const a = state.area, tot = a.items.length;
+  if (state.mode === 'IN'){
+    const f = a.items.filter(isDone).length, n = dirtyCount();
+    $('progBar').style.width = (tot ? f / tot * 100 : 0) + '%';
+    $('progTxt').textContent = `${f} item sudah tercatat masuk · ${n} akan ditambahkan · ${dayLabel(state.date)}`;
+    return;
+  }
+  const f = a.items.filter(it => isDone(it) || (state.edits[it.n] ?? '') !== '').length;
+  $('progBar').style.width = (tot ? f / tot * 100 : 0) + '%';
+  $('progTxt').textContent = `${f} dari ${tot} item terisi · ${dayLabel(state.date)}`;
+}
+function dirtyCount(){ return Object.keys(state.edits).length; }
+function renderDock(){
+  const n = dirtyCount();
+  const invalid = Object.values(state.edits).filter(v => String(v).trim() !== '' && (isNaN(num(v)) || (state.mode === 'IN' && num(v) === 0))).length;
+  $('dockTxt').innerHTML = n ? `<b>${n} angka</b> belum disimpan${invalid ? ` · ${invalid} tidak valid` : ''}` : (state.mode === 'IN' ? 'Isi qty di item yang masuk' : 'Semua angka sudah tersimpan');
+  $('btnSave').disabled = !n || invalid > 0;
+  $('btnSave').textContent = n ? `Simpan (${n})` : 'Simpan';
+}
+$('inSearch').addEventListener('input', renderList);
+$('btnTodo').onclick = () => { state.onlyTodo = !state.onlyTodo; $('btnTodo').setAttribute('aria-pressed', state.onlyTodo); renderList(); };
+
+$('list').addEventListener('input', e => {
+  const inp = e.target; if (inp.tagName !== 'INPUT') return;
+  const row = inp.closest('.row'), name = row.dataset.n;
+  const it = state.area.items.find(x => x.n === name);
+  const orig = state.mode === 'IN' || it.v === null ? '' : fmt(it.v);
+  const val = inp.value.trim();
+  if (val === orig) delete state.edits[name]; else state.edits[name] = inp.value;
+  row.classList.toggle('edited', has(state.edits, name));
+  const fl = flagFor(it, inp.value), fe = row.querySelector('.flag');
+  fe.textContent = fl ? fl.t : ''; fe.classList.toggle('bad', !!(fl && fl.bad));
+  state.sid = newSid(); renderDock(); renderProgress();
+});
+$('list').addEventListener('keydown', e => {
+  if (e.key !== 'Enter' || e.target.tagName !== 'INPUT') return;
+  e.preventDefault();
+  const all = [...document.querySelectorAll('#list input')], next = all[all.indexOf(e.target) + 1];
+  if (next){ next.focus(); next.select(); } else e.target.blur();
+});
+$('list').addEventListener('focusin', e => { if (e.target.tagName === 'INPUT') setTimeout(() => e.target.select(), 0); });
+
+/* ---------- Save ---------- */
+$('btnSave').onclick = () => {
+  $('toast').classList.add('hidden');
+  const edits = Object.entries(state.edits), isIn = state.mode === 'IN';
+  const cleared = edits.filter(([, v]) => String(v).trim() === '').length;
+  const bad = edits.filter(([n, v]) => { const f = flagFor(state.area.items.find(x => x.n === n), v); return f && f.bad; }).length;
+  $('saveTitle').textContent = isIn ? 'Simpan barang masuk' : 'Simpan stok opname';
+  $('saveMeta').textContent = `${state.area.name} · ${dayLabel(state.date)} · ${edits.length - cleared} ${isIn ? 'item ditambahkan ke sheet IN' : 'angka akan disimpan'}`;
+  const warns = [];
+  if (bad) warns.push(`${bad} angka ditandai "cek lagi". Pastikan bukan salah ketik.`);
+  if (cleared && !isIn) warns.push(`${cleared} angka yang dikosongkan tidak akan dihapus dari sheet (minta supervisor kalau perlu dihapus).`);
+  if (isIn) warns.push('Qty masuk DITAMBAHKAN ke angka yang sudah ada di tanggal ini. Salah input? Minta supervisor koreksi di sheet IN.');
+  $('saveWarn').innerHTML = warns.map(esc).join('<br>');
+  $('saveWarn').classList.toggle('hidden', !warns.length);
+  $('catField').classList.toggle('hidden', !isIn);
+  $('catatan').value = '';
+  $('staffName').value = load(LS.name); $('staffErr').textContent = '';
+  $('saveScrim').classList.remove('hidden');
+};
+$('saveBack').onclick = () => $('saveScrim').classList.add('hidden');
+$('saveGo').onclick = async () => {
+  const staff = $('staffName').value.trim();
+  if (!staff){ $('staffErr').textContent = 'Isi nama kamu dulu sebelum simpan.'; $('staffName').focus(); return; }
+  store(LS.name, staff);
+  const vals = Object.entries(state.edits).filter(([, v]) => String(v).trim() !== '').map(([n, v]) => ({ n, q: num(v) }));
+  if (!vals.length){ $('saveScrim').classList.add('hidden'); state.edits = {}; renderList(); return; }
+  const btn = $('saveGo'); btn.disabled = true; btn.textContent = 'Menyimpan…';
+  try {
+    const payload = { staff, sid: state.sid, tanggal: state.date, area: state.area.name, catatan: $('catatan').value.trim(), vals };
+    const r = await api({ action: state.mode === 'IN' ? 'save_in' : 'save_opname', data: JSON.stringify(payload) });
+    const areaName = state.area.name;
+    state.edits = {}; state.sid = newSid();
+    $('saveScrim').classList.add('hidden');
+    toast(r.duplicate ? 'Sudah tersimpan sebelumnya.' : `${vals.length} angka tersimpan di sheet.`);
+    await loadDate(state.date); openArea(areaName);
+  } catch(e){
+    toast(e.message + ' Angka di layar tidak hilang, tekan simpan lagi.', true);
+    if (/PIN/i.test(e.message)){ store(LS.pin, null); showLogin(e.message); }
+  } finally { btn.disabled = false; btn.textContent = 'Simpan ke sheet'; }
+};
+
+/* ---------- Mulai ---------- */
+window.addEventListener('beforeunload', e => { if (dirtyCount()){ e.preventDefault(); e.returnValue = ''; } });
+if (API_URL.indexOf('script.google.com') === -1){
+  document.body.innerHTML = '<p style="padding:24px;font-family:sans-serif">Isi dulu <b>API_URL</b> di index.html dengan URL Web App roastery.</p>';
+} else if (load(LS.pin)){
+  loadDate('').then(() => { $('app').classList.remove('hidden'); showHome(); }).catch(e => showLogin(e.message));
+} else showLogin();
+</script>
+</body>
+</html>
