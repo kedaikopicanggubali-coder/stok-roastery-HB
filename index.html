@@ -41,8 +41,8 @@ header{position:sticky;top:0;z-index:5;background:var(--area);color:#fff;padding
 .top h1{font-size:19px;margin:0}
 .link{background:none;border:0;color:#fff;opacity:.85;padding:6px 0;font-size:15px;text-decoration:underline;text-underline-offset:3px}
 .back{background:none;border:0;color:#fff;font-size:16px;padding:6px 10px 6px 0;font-weight:700}
-.mode{display:grid;grid-template-columns:1fr 1fr;margin-top:12px;background:rgba(0,0,0,.25);border-radius:12px;padding:4px}
-.mode button{border:0;background:none;color:#fff;padding:11px 8px;border-radius:9px;font-weight:700;font-size:16px;opacity:.75}
+.mode{display:grid;grid-template-columns:1fr 1fr 1fr;margin-top:12px;background:rgba(0,0,0,.25);border-radius:12px;padding:4px}
+.mode button{border:0;background:none;color:#fff;padding:11px 4px;border-radius:9px;font-weight:700;font-size:15px;opacity:.75}
 .mode button[aria-pressed="true"]{background:#fff;color:var(--area);opacity:1}
 .row .ket{font-size:13px;color:var(--area);font-weight:700}
 .row .inToday{font-size:13px;color:#0F5132;font-weight:700}
@@ -82,6 +82,28 @@ header{position:sticky;top:0;z-index:5;background:var(--area);color:#fff;padding
 .row.edited{background:var(--edit-soft)}
 .row.edited input{border-color:var(--edit);background:#fff}
 .empty{padding:40px 8px;color:var(--muted);text-align:center}
+
+/* PO WA */
+#poView{padding:16px 16px calc(40px + env(safe-area-inset-bottom))}
+.poInfo{color:var(--muted);font-size:14px;padding:0 2px 12px}
+.poWarn{background:var(--low-soft);color:#7A5305;border-radius:10px;padding:10px 12px;font-size:15px;margin-bottom:12px}
+.poCard{background:var(--card);border:1px solid var(--line);border-radius:14px;margin-bottom:14px;overflow:hidden}
+.poHead{background:var(--navy);color:#fff;padding:12px 14px;display:flex;justify-content:space-between;gap:10px;font-weight:700;font-size:17px}
+.poHead small{font-weight:400;opacity:.85;font-size:14px;white-space:nowrap}
+.poItems{padding:2px 14px}
+.poIt{padding:9px 0;border-bottom:1px solid var(--line)}
+.poIt:last-child{border-bottom:0}
+.poIt .nm{font-weight:700;overflow-wrap:anywhere}
+.poIt .qty{font-size:15px}
+.poIt .qty b{font-size:17px}
+.poIt .det{font-size:13px;color:var(--muted)}
+.poIt .stale{color:var(--warn);font-weight:700}
+.poNote{padding:4px 14px 0}
+.poNote input{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:10px;font-size:16px}
+.poAct{display:grid;grid-template-columns:1fr 1.4fr;gap:10px;padding:12px 14px 14px}
+.poHint{font-size:13px;color:var(--muted);padding:0 14px 14px;margin-top:-4px}
+a.btn{display:block;text-align:center;text-decoration:none}
+.btn.wa{background:#1FA855;color:#fff}
 
 /* Dock */
 .dock{position:fixed;left:0;right:0;bottom:0;z-index:6;background:var(--card);border-top:1px solid var(--line);
@@ -136,6 +158,7 @@ header{position:sticky;top:0;z-index:5;background:var(--area);color:#fff;padding
     <div class="mode" role="group" aria-label="Jenis input">
       <button id="mOp" aria-pressed="true">Stok opname</button>
       <button id="mIn" aria-pressed="false">Barang masuk</button>
+      <button id="mPo" aria-pressed="false">PO WA</button>
     </div>
     <div class="dates" id="dates" role="group" aria-label="Tanggal"></div>
     <div id="progWrap" class="hidden">
@@ -160,6 +183,8 @@ header{position:sticky;top:0;z-index:5;background:var(--area);color:#fff;padding
       <button class="btn primary" id="btnSave" disabled>Simpan</button>
     </div></div>
   </div>
+
+  <div id="poView" class="wrap hidden"></div>
 </section>
 
 <div class="scrim hidden" id="saveScrim">
@@ -190,11 +215,13 @@ header{position:sticky;top:0;z-index:5;background:var(--area);color:#fff;padding
 const API_URL = 'https://script.google.com/macros/s/AKfycbyjTaAqgkREVTNFNcB9l8v4uT3HtZ7ucNfbLMDAhz60WVUB_IPvdL21pGvpoh0MdSHj1Q/exec'; // https://script.google.com/macros/s/..../exec
 const AREA_COLORS = { 'Beans Espresso': '#1A3C6E', 'Beans Filter': '#533483', 'Packaging & Supplies': '#1B4332', 'Sticker & Label': '#7C2D12' };
 const IN_COLOR = '#0F5132';
+const PO_COLOR = '#075E54';
+const COMPANY_NAME = 'Hungry Bird Coffee Roaster';
 /* ================================================= */
 
 const $ = id => document.getElementById(id);
 const LS = { pin: 'hbrs_pin', name: 'hbrs_name' };
-const state = { data: null, today: '', date: '', mode: 'OP', area: null, edits: {}, onlyTodo: false, sid: newSid() };
+const state = { data: null, today: '', date: '', mode: 'OP', area: null, edits: {}, onlyTodo: false, sid: newSid(), po: null };
 
 function newSid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2, 10); }
 function esc(s){ return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
@@ -204,6 +231,7 @@ function store(k, v){ try { v === null ? localStorage.removeItem(k) : localStora
 function load(k){ try { return localStorage.getItem(k) || ''; } catch(e){ return ''; } }
 function isoShift(iso, days){ const d = new Date(iso + 'T12:00:00'); d.setDate(d.getDate() + days); return d.toISOString().slice(0, 10); }
 const HARI = ['Min','Sen','Sel','Rab','Kam','Jum','Sab'];
+const BULAN = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
 function dayLabel(iso){ const d = new Date(iso + 'T12:00:00'); return `${HARI[d.getDay()]} ${d.getDate()}/${d.getMonth()+1}`; }
 const has = (o, k) => Object.prototype.hasOwnProperty.call(o, k);
 
@@ -242,7 +270,7 @@ $('btnLogin').onclick = async () => {
   const pin = $('inPin').value.trim();
   if (!pin){ $('loginErr').textContent = 'Isi PIN dulu.'; return; }
   store(LS.pin, pin); $('loginErr').textContent = 'Mengecek…';
-  try { await loadDate(''); $('login').classList.add('hidden'); $('app').classList.remove('hidden'); showHome(); }
+  try { await loadDate(''); $('login').classList.add('hidden'); $('app').classList.remove('hidden'); showCurrent(); }
   catch(e){ store(LS.pin, null); showLogin(e.message); }
 };
 $('btnOut').onclick = () => { if (!confirmDiscard()) return; state.edits = {}; store(LS.pin, null); showLogin(); };
@@ -262,21 +290,28 @@ $('dates').addEventListener('click', async e => {
   if (!confirmDiscard()) return;
   state.edits = {}; state.sid = newSid();
   const areaName = state.area && state.area.name;
-  try { await loadDate(b.dataset.iso); areaName ? openArea(areaName) : showHome(); }
+  try {
+    await loadDate(b.dataset.iso);
+    if (state.mode === 'PO') showPO(); else if (areaName) openArea(areaName); else showHome();
+  }
   catch(err){ toast(err.message, true); renderDates(); }
 });
+function showCurrent(){ state.mode === 'PO' ? showPO() : showHome(); }
 
 /* ---------- Mode ---------- */
+const MODE_BTN = { OP: 'mOp', IN: 'mIn', PO: 'mPo' };
 function setMode(m){
   if (m === state.mode) return;
   if (!confirmDiscard()) return;
   state.mode = m; state.edits = {}; state.sid = newSid();
-  $('mOp').setAttribute('aria-pressed', m === 'OP'); $('mIn').setAttribute('aria-pressed', m === 'IN');
+  Object.entries(MODE_BTN).forEach(([k, id]) => $(id).setAttribute('aria-pressed', k === m));
+  if (m === 'PO'){ showPO(); return; }
   const areaName = state.area && state.area.name;
   if (areaName && book() && book().areas.some(a => a.name === areaName)) openArea(areaName); else showHome();
 }
 $('mOp').onclick = () => setMode('OP');
 $('mIn').onclick = () => setMode('IN');
+$('mPo').onclick = () => setMode('PO');
 
 function isDone(it){ return it.v !== null && it.v !== ''; }
 
@@ -287,7 +322,7 @@ function showHome(){
   setColor(state.mode === 'IN' ? IN_COLOR : '#1A1A2E');
   $('title').textContent = 'Stok Roastery';
   $('btnBack').classList.add('hidden'); $('progWrap').classList.add('hidden');
-  $('areaView').classList.add('hidden'); $('home').classList.remove('hidden');
+  $('areaView').classList.add('hidden'); $('poView').classList.add('hidden'); $('home').classList.remove('hidden');
   const b = book();
   if (!b){
     $('homeHint').textContent = '';
@@ -317,7 +352,7 @@ function openArea(name){
   setColor(state.mode === 'IN' ? IN_COLOR : (AREA_COLORS[a.name] || '#374151'));
   $('title').textContent = (state.mode === 'IN' ? 'Masuk · ' : '') + a.name;
   $('btnBack').classList.remove('hidden'); $('progWrap').classList.remove('hidden');
-  $('home').classList.add('hidden'); $('areaView').classList.remove('hidden');
+  $('home').classList.add('hidden'); $('poView').classList.add('hidden'); $('areaView').classList.remove('hidden');
   $('btnTodo').textContent = state.mode === 'IN' ? 'Sudah diisi' : 'Belum diisi';
   $('inSearch').value = '';
   renderList(); renderProgress();
@@ -405,6 +440,87 @@ $('list').addEventListener('keydown', e => {
 });
 $('list').addEventListener('focusin', e => { if (e.target.tagName === 'INPUT') setTimeout(() => e.target.select(), 0); });
 
+/* ---------- PO WA ---------- */
+let poToken = 0;
+async function showPO(){
+  state.area = null;
+  setColor(PO_COLOR);
+  $('title').textContent = 'PO WA';
+  $('btnBack').classList.add('hidden'); $('progWrap').classList.add('hidden');
+  $('home').classList.add('hidden'); $('areaView').classList.add('hidden');
+  const v = $('poView'); v.classList.remove('hidden');
+  v.innerHTML = '<div class="loading">Menghitung PO…</div>';
+  const my = ++poToken;
+  try {
+    const r = await api({ action: 'po', tanggal: state.date });
+    if (my !== poToken || state.mode !== 'PO') return;
+    state.po = r; renderPO();
+  } catch(e){
+    if (my !== poToken || state.mode !== 'PO') return;
+    const msg = /unknown|tidak dikenal|action/i.test(e.message) ? 'Server belum mendukung PO WA. Pasang PO_WebApp.gs lalu deploy versi baru.' : e.message;
+    v.innerHTML = `<div class="empty">${esc(msg)}<br><br><button class="btn ghost" id="poRetry">Coba lagi</button></div>`;
+    $('poRetry').onclick = showPO;
+    if (/PIN/i.test(e.message)){ store(LS.pin, null); showLogin(e.message); }
+  }
+}
+function tglPanjang(iso){ const d = new Date(iso + 'T12:00:00'); return `${d.getDate()} ${BULAN[d.getMonth()]} ${d.getFullYear()}`; }
+function fmtQ(n){ return String(Math.round(n * 10) / 10).replace('.', ','); }
+function poText(g, note){
+  const lines = g.items.map((it, i) =>
+    `${i + 1}. ${it.n} — *${fmtQ(it.q)} ${it.u}*${it.ket ? ` (${it.ket})` : ''}${it.dataLabel ? ` _(data: ${it.dataLabel})_` : ''}`
+  ).join('\n');
+  return `📋 *ORDER STOK ROASTERY*\n🏪 *${COMPANY_NAME}*\n📅 ${tglPanjang(state.po.tanggal)}\n\n` +
+    `Kepada: ${g.tujuan}\n─────────────────\n${lines}\n─────────────────\n\n` +
+    `📝 Catatan:${note ? ' ' + note : ''}\n\nMohon konfirmasi. Terima kasih! 🙏`;
+}
+function waUrl(g, note){ return `https://wa.me/${g.wa || ''}?text=${encodeURIComponent(poText(g, note))}`; }
+function renderPO(){
+  const r = state.po, v = $('poView');
+  const warns = [];
+  if (r.stale) warns.push(`${r.stale} item datanya bukan dari ${dayLabel(r.tanggal)} (ditandai merah). Cek dulu masih relevan atau tidak.`);
+  if (r.perluMax.length) warns.push(`${r.perluMax.length} item perlu order tapi Max belum diisi di Master Item (tidak masuk PO): ${r.perluMax.join(', ')}.`);
+  if (r.tanpaTujuan.length) warns.push(`${r.tanpaTujuan.length} item perlu order tapi kolom Supplier/tujuan kosong: ${r.tanpaTujuan.join(', ')}.`);
+  const info = `<div class="poInfo">PO berdasarkan stok sampai ${dayLabel(r.tanggal)} · sheet "${esc(r.sheet)}". Tidak mengubah sheet.</div>`;
+  const warnHtml = warns.map(w => `<div class="poWarn">⚠️ ${esc(w)}</div>`).join('');
+  if (!r.groups.length){
+    v.innerHTML = info + warnHtml + `<div class="empty">✅ Semua stok aman, belum ada yang perlu diorder.</div>`;
+    return;
+  }
+  v.innerHTML = info + warnHtml + r.groups.map((g, gi) => `
+    <div class="poCard">
+      <div class="poHead"><span>${esc(g.tujuan)}</span><small>${g.items.length} item</small></div>
+      <div class="poItems">${g.items.map(it => `
+        <div class="poIt">
+          <div class="nm">${esc(it.n)}</div>
+          <div class="qty">order <b>${fmtQ(it.q)} ${esc(it.u)}</b>${it.ket ? ` · ${esc(it.ket)}` : ''}</div>
+          <div class="det">stok ${fmt(it.last)} · min ${fmt(it.min)} · max ${fmt(it.max)}${it.dataLabel ? ` · <span class="stale">data ${esc(it.dataLabel)}</span>` : ''}</div>
+        </div>`).join('')}
+      </div>
+      <div class="poNote"><input data-gi="${gi}" autocomplete="off" placeholder="Catatan untuk ${esc(g.tujuan)} (opsional)" aria-label="Catatan untuk ${esc(g.tujuan)}"></div>
+      <div class="poAct">
+        <button class="btn ghost" data-copy="${gi}">Salin teks</button>
+        <a class="btn wa" data-wa="${gi}" href="${esc(waUrl(g, ''))}" target="_blank" rel="noopener">${g.wa ? 'Buka WA ▶' : 'Pilih chat WA ▶'}</a>
+      </div>
+      ${g.wa ? '' : `<div class="poHint">Nomor ${esc(g.tujuan)} belum diisi di sheet "Tujuan Order", jadi WA akan minta pilih chat/grup dulu.</div>`}
+    </div>`).join('');
+}
+function noteFor(gi){ const i = document.querySelector(`#poView input[data-gi="${gi}"]`); return i ? i.value.trim() : ''; }
+$('poView').addEventListener('input', e => {
+  const gi = e.target.dataset.gi; if (gi === undefined) return;
+  const a = document.querySelector(`#poView a[data-wa="${gi}"]`);
+  if (a) a.href = waUrl(state.po.groups[gi], noteFor(gi));
+});
+$('poView').addEventListener('click', async e => {
+  const b = e.target.closest('[data-copy]'); if (!b) return;
+  const gi = b.dataset.copy, text = poText(state.po.groups[gi], noteFor(gi));
+  try { await navigator.clipboard.writeText(text); }
+  catch(err){
+    const ta = document.createElement('textarea'); ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); } catch(_){} ta.remove();
+  }
+  toast(`Teks PO ${state.po.groups[gi].tujuan} tersalin.`);
+});
+
 /* ---------- Save ---------- */
 $('btnSave').onclick = () => {
   $('toast').classList.add('hidden');
@@ -451,7 +567,7 @@ window.addEventListener('beforeunload', e => { if (dirtyCount()){ e.preventDefau
 if (API_URL.indexOf('script.google.com') === -1){
   document.body.innerHTML = '<p style="padding:24px;font-family:sans-serif">Isi dulu <b>API_URL</b> di index.html dengan URL Web App roastery.</p>';
 } else if (load(LS.pin)){
-  loadDate('').then(() => { $('app').classList.remove('hidden'); showHome(); }).catch(e => showLogin(e.message));
+  loadDate('').then(() => { $('app').classList.remove('hidden'); showCurrent(); }).catch(e => showLogin(e.message));
 } else showLogin();
 </script>
 </body>
