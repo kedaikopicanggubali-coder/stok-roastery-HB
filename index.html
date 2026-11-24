@@ -41,8 +41,8 @@ header{position:sticky;top:0;z-index:5;background:var(--area);color:#fff;padding
 .top h1{font-size:19px;margin:0}
 .link{background:none;border:0;color:#fff;opacity:.85;padding:6px 0;font-size:15px;text-decoration:underline;text-underline-offset:3px}
 .back{background:none;border:0;color:#fff;font-size:16px;padding:6px 10px 6px 0;font-weight:700}
-.mode{display:grid;grid-template-columns:1fr 1fr 1fr;margin-top:12px;background:rgba(0,0,0,.25);border-radius:12px;padding:4px}
-.mode button{border:0;background:none;color:#fff;padding:11px 4px;border-radius:9px;font-weight:700;font-size:15px;opacity:.75}
+.mode{display:grid;grid-template-columns:repeat(4,1fr);margin-top:12px;background:rgba(0,0,0,.25);border-radius:12px;padding:4px}
+.mode button{border:0;background:none;color:#fff;padding:11px 2px;border-radius:9px;font-weight:700;font-size:14px;opacity:.75}
 .mode button[aria-pressed="true"]{background:#fff;color:var(--area);opacity:1}
 .row .ket{font-size:13px;color:var(--area);font-weight:700}
 .row .inToday{font-size:13px;color:#0F5132;font-weight:700}
@@ -105,6 +105,26 @@ header{position:sticky;top:0;z-index:5;background:var(--area);color:#fff;padding
 a.btn{display:block;text-align:center;text-decoration:none}
 .btn.wa{background:#1FA855;color:#fff}
 
+/* Master */
+#msView{padding:16px 16px calc(40px + env(safe-area-inset-bottom))}
+.msTools{display:flex;gap:8px}
+.msTools input{flex:1;min-width:0;padding:12px;border:1px solid var(--line);border-radius:10px;background:#fff;font-size:16px}
+.msTools .btn{padding:0 16px;white-space:nowrap}
+.msOff{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:14px;padding:10px 2px 4px}
+.msArea{display:flex;justify-content:space-between;align-items:baseline;margin-top:14px;padding:10px 12px;border-radius:10px 10px 0 0;background:var(--c);color:#fff;font-weight:700}
+.msArea small{font-weight:400;opacity:.85}
+.msRow{display:block;width:100%;text-align:left;background:var(--card);border:0;border-bottom:1px solid var(--line);padding:11px 12px}
+.msRow .nm{font-weight:700;overflow-wrap:anywhere}
+.msRow .det{font-size:14px;color:var(--muted)}
+.msRow .ketx{font-size:13px;color:var(--ink)}
+.msRow .warnx{font-size:13px;font-weight:700;color:var(--warn)}
+.msRow.off{opacity:.55}
+.badge{display:inline-block;font-size:12px;font-weight:700;background:#E5E7EB;color:#374151;border-radius:99px;padding:1px 8px;margin-left:6px;vertical-align:middle}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.field select{width:100%;padding:12px;border:1px solid var(--line);border-radius:10px;font-size:17px;background:#fff}
+.chk{display:flex;gap:10px;align-items:flex-start;margin-top:16px;font-size:15px}
+.chk input{width:22px;height:22px;flex:none;margin-top:1px}
+
 /* Dock */
 .dock{position:fixed;left:0;right:0;bottom:0;z-index:6;background:var(--card);border-top:1px solid var(--line);
   padding:12px 16px calc(12px + env(safe-area-inset-bottom))}
@@ -156,9 +176,10 @@ a.btn{display:block;text-align:center;text-decoration:none}
       <button class="link" id="btnOut">Keluar</button>
     </div>
     <div class="mode" role="group" aria-label="Jenis input">
-      <button id="mOp" aria-pressed="true">Stok opname</button>
-      <button id="mIn" aria-pressed="false">Barang masuk</button>
+      <button id="mOp" aria-pressed="true">Opname</button>
+      <button id="mIn" aria-pressed="false">Masuk</button>
       <button id="mPo" aria-pressed="false">PO WA</button>
+      <button id="mMs" aria-pressed="false">Master</button>
     </div>
     <div class="dates" id="dates" role="group" aria-label="Tanggal"></div>
     <div id="progWrap" class="hidden">
@@ -185,7 +206,45 @@ a.btn{display:block;text-align:center;text-decoration:none}
   </div>
 
   <div id="poView" class="wrap hidden"></div>
+  <div id="msView" class="wrap hidden"></div>
 </section>
+
+<div class="scrim hidden" id="msScrim">
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="msTitle">
+    <h2 id="msTitle">Item</h2>
+    <div class="meta" id="msMeta"></div>
+    <div class="field" id="fNameWrap">
+      <label for="fName">Nama item</label>
+      <input id="fName" autocomplete="off" maxlength="80" placeholder="mis. Bali Kintamani Natural">
+    </div>
+    <div class="field" id="fAreaWrap">
+      <label for="fArea">Area / kategori</label>
+      <select id="fArea"></select>
+    </div>
+    <div class="grid2">
+      <div class="field"><label for="fUnit">Satuan</label><select id="fUnit"></select></div>
+      <div class="field"><label for="fSup">Tujuan order</label><select id="fSup"></select></div>
+    </div>
+    <div class="grid2">
+      <div class="field"><label for="fMin">Min</label><input id="fMin" inputmode="decimal" autocomplete="off"></div>
+      <div class="field"><label for="fMax">Max</label><input id="fMax" inputmode="decimal" autocomplete="off"></div>
+    </div>
+    <div class="field">
+      <label for="fKet">Keterangan satuan (opsional)</label>
+      <input id="fKet" autocomplete="off" maxlength="60" placeholder="mis. 1 box = 5 kg">
+    </div>
+    <label class="chk" id="fAktifWrap"><input type="checkbox" id="fAktif"><span>Item aktif<br><small style="color:var(--muted)">Kalau dimatikan, item disembunyikan dari opname, barang masuk &amp; PO. Riwayat stok tetap aman.</small></span></label>
+    <div class="field">
+      <label for="fStaff">Nama kamu (dicatat di log)</label>
+      <input id="fStaff" autocomplete="off" placeholder="mis. Aditya">
+    </div>
+    <div class="errTxt" id="fErr" role="alert"></div>
+    <div class="actions">
+      <button class="btn ghost" id="fBack">Batal</button>
+      <button class="btn primary" id="fGo">Simpan</button>
+    </div>
+  </div>
+</div>
 
 <div class="scrim hidden" id="saveScrim">
   <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="saveTitle">
@@ -216,12 +275,13 @@ const API_URL = 'https://script.google.com/macros/s/AKfycbyjTaAqgkREVTNFNcB9l8v4
 const AREA_COLORS = { 'Beans Espresso': '#1A3C6E', 'Beans Filter': '#533483', 'Packaging & Supplies': '#1B4332', 'Sticker & Label': '#7C2D12' };
 const IN_COLOR = '#0F5132';
 const PO_COLOR = '#075E54';
+const MS_COLOR = '#374151';
 const COMPANY_NAME = 'Hungry Bird Coffee Roaster';
 /* ================================================= */
 
 const $ = id => document.getElementById(id);
 const LS = { pin: 'hbrs_pin', name: 'hbrs_name' };
-const state = { data: null, today: '', date: '', mode: 'OP', area: null, edits: {}, onlyTodo: false, sid: newSid(), po: null };
+const state = { data: null, today: '', date: '', mode: 'OP', area: null, edits: {}, onlyTodo: false, sid: newSid(), po: null, ms: null };
 
 function newSid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2, 10); }
 function esc(s){ return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
@@ -292,26 +352,28 @@ $('dates').addEventListener('click', async e => {
   const areaName = state.area && state.area.name;
   try {
     await loadDate(b.dataset.iso);
-    if (state.mode === 'PO') showPO(); else if (areaName) openArea(areaName); else showHome();
+    if (state.mode === 'PO') showPO(); else if (state.mode === 'MS') showMaster(); else if (areaName) openArea(areaName); else showHome();
   }
   catch(err){ toast(err.message, true); renderDates(); }
 });
-function showCurrent(){ state.mode === 'PO' ? showPO() : showHome(); }
+function showCurrent(){ state.mode === 'PO' ? showPO() : state.mode === 'MS' ? showMaster() : showHome(); }
 
 /* ---------- Mode ---------- */
-const MODE_BTN = { OP: 'mOp', IN: 'mIn', PO: 'mPo' };
+const MODE_BTN = { OP: 'mOp', IN: 'mIn', PO: 'mPo', MS: 'mMs' };
 function setMode(m){
   if (m === state.mode) return;
   if (!confirmDiscard()) return;
   state.mode = m; state.edits = {}; state.sid = newSid();
   Object.entries(MODE_BTN).forEach(([k, id]) => $(id).setAttribute('aria-pressed', k === m));
   if (m === 'PO'){ showPO(); return; }
+  if (m === 'MS'){ showMaster(); return; }
   const areaName = state.area && state.area.name;
   if (areaName && book() && book().areas.some(a => a.name === areaName)) openArea(areaName); else showHome();
 }
 $('mOp').onclick = () => setMode('OP');
 $('mIn').onclick = () => setMode('IN');
 $('mPo').onclick = () => setMode('PO');
+$('mMs').onclick = () => setMode('MS');
 
 function isDone(it){ return it.v !== null && it.v !== ''; }
 
@@ -322,7 +384,7 @@ function showHome(){
   setColor(state.mode === 'IN' ? IN_COLOR : '#1A1A2E');
   $('title').textContent = 'Stok Roastery';
   $('btnBack').classList.add('hidden'); $('progWrap').classList.add('hidden');
-  $('areaView').classList.add('hidden'); $('poView').classList.add('hidden'); $('home').classList.remove('hidden');
+  $('areaView').classList.add('hidden'); $('poView').classList.add('hidden'); $('msView').classList.add('hidden'); $('dates').classList.remove('hidden'); $('home').classList.remove('hidden');
   const b = book();
   if (!b){
     $('homeHint').textContent = '';
@@ -352,7 +414,7 @@ function openArea(name){
   setColor(state.mode === 'IN' ? IN_COLOR : (AREA_COLORS[a.name] || '#374151'));
   $('title').textContent = (state.mode === 'IN' ? 'Masuk · ' : '') + a.name;
   $('btnBack').classList.remove('hidden'); $('progWrap').classList.remove('hidden');
-  $('home').classList.add('hidden'); $('poView').classList.add('hidden'); $('areaView').classList.remove('hidden');
+  $('home').classList.add('hidden'); $('poView').classList.add('hidden'); $('msView').classList.add('hidden'); $('dates').classList.remove('hidden'); $('areaView').classList.remove('hidden');
   $('btnTodo').textContent = state.mode === 'IN' ? 'Sudah diisi' : 'Belum diisi';
   $('inSearch').value = '';
   renderList(); renderProgress();
@@ -447,7 +509,7 @@ async function showPO(){
   setColor(PO_COLOR);
   $('title').textContent = 'PO WA';
   $('btnBack').classList.add('hidden'); $('progWrap').classList.add('hidden');
-  $('home').classList.add('hidden'); $('areaView').classList.add('hidden');
+  $('home').classList.add('hidden'); $('areaView').classList.add('hidden'); $('msView').classList.add('hidden'); $('dates').classList.remove('hidden');
   const v = $('poView'); v.classList.remove('hidden');
   v.innerHTML = '<div class="loading">Menghitung PO…</div>';
   const my = ++poToken;
@@ -520,6 +582,130 @@ $('poView').addEventListener('click', async e => {
   }
   toast(`Teks PO ${state.po.groups[gi].tujuan} tersalin.`);
 });
+
+/* ---------- MASTER ITEM ---------- */
+let msToken = 0;
+async function showMaster(){
+  state.area = null;
+  setColor(MS_COLOR);
+  $('title').textContent = 'Master Item';
+  $('btnBack').classList.add('hidden'); $('progWrap').classList.add('hidden'); $('dates').classList.add('hidden');
+  ['home', 'areaView', 'poView'].forEach(id => $(id).classList.add('hidden'));
+  const v = $('msView'); v.classList.remove('hidden');
+  if (!state.ms) v.innerHTML = '<div class="loading">Memuat Master Item…</div>';
+  const my = ++msToken;
+  try {
+    const r = await api({ action: 'master_get' });
+    if (my !== msToken || state.mode !== 'MS') return;
+    state.ms = r; renderMaster();
+  } catch(e){
+    if (my !== msToken || state.mode !== 'MS') return;
+    const msg = /tidak dikenal/i.test(e.message) ? 'Server belum mendukung Master. Pasang Master_WebApp.gs + WebApp_Roastery v1.1 lalu deploy versi baru.' : e.message;
+    v.innerHTML = `<div class="empty">${esc(msg)}<br><br><button class="btn ghost" id="msRetry">Coba lagi</button></div>`;
+    $('msRetry').onclick = showMaster;
+    if (/PIN/i.test(e.message)){ store(LS.pin, null); showLogin(e.message); }
+  }
+}
+function renderMaster(){
+  const v = $('msView');
+  if (!$('msList')){
+    v.innerHTML = `<div class="msTools">
+        <input id="msSearch" type="search" placeholder="Cari item…" autocomplete="off">
+        <button class="btn primary" id="msAdd" style="background:${MS_COLOR}">+ Tambah</button>
+      </div>
+      <label class="msOff"><input type="checkbox" id="msShowOff"> Tampilkan item nonaktif</label>
+      <div id="msList"></div>`;
+    $('msSearch').addEventListener('input', renderMsList);
+    $('msShowOff').addEventListener('change', renderMsList);
+    $('msAdd').onclick = () => openMsForm(null);
+  }
+  renderMsList();
+}
+function renderMsList(){
+  const words = $('msSearch').value.trim().toLowerCase().split(/\s+/).filter(Boolean);
+  const showOff = $('msShowOff').checked;
+  const all = state.ms.items;
+  const nOff = all.filter(it => !it.aktif).length;
+  $('msShowOff').parentElement.lastChild.textContent = ` Tampilkan item nonaktif (${nOff})`;
+  const items = all.filter(it => (showOff || it.aktif) && words.every(w => it.n.toLowerCase().includes(w)));
+  if (!items.length){ $('msList').innerHTML = '<div class="empty">Tidak ada item yang cocok.</div>'; return; }
+  const order = [], groups = {};
+  items.forEach(it => { if (!groups[it.area]){ groups[it.area] = []; order.push(it.area); } groups[it.area].push(it); });
+  $('msList').innerHTML = order.map(a => `
+    <div class="msArea" style="--c:${AREA_COLORS[a] || '#374151'}"><span>${esc(a || 'Tanpa area')}</span><small>${groups[a].length} item</small></div>
+    ${groups[a].map(it => `
+      <button class="msRow${it.aktif ? '' : ' off'}" data-n="${esc(it.n)}">
+        <div class="nm">${esc(it.n)}${it.aktif ? '' : '<span class="badge">Nonaktif</span>'}</div>
+        <div class="det">${esc(it.u || '–')} · min ${fmt(it.min)} · max ${fmt(it.max)} · ${esc(it.sup || 'tujuan kosong')}</div>
+        ${it.ket ? `<div class="ketx">${esc(it.ket)}</div>` : ''}
+        ${it.aktif && (it.max === null || it.min === null) ? '<div class="warnx">Min/Max kosong, item ini tidak akan masuk PO</div>' : ''}
+      </button>`).join('')}`).join('');
+}
+$('msView').addEventListener('click', e => {
+  const b = e.target.closest('.msRow'); if (!b) return;
+  const it = state.ms.items.find(x => x.n === b.dataset.n);
+  if (it) openMsForm(it);
+});
+function fillSelect(sel, list, val){
+  const L = list.slice(); if (val && !L.includes(val)) L.push(val);
+  sel.innerHTML = (val ? '' : '<option value="">— pilih —</option>') +
+    L.map(x => `<option value="${esc(x)}"${x === val ? ' selected' : ''}>${esc(x)}</option>`).join('');
+}
+function openMsForm(it){
+  const L = state.ms.lists;
+  state.msEdit = it ? it.n : null;
+  $('msTitle').textContent = it ? it.n : 'Tambah item baru';
+  $('msMeta').textContent = it
+    ? `${it.area} · nama & area dikunci (stok dan PO dicocokkan lewat nama)`
+    : 'Item baru langsung masuk ke sheet Stok & IN bulan ini, jadi bisa dipakai hari ini juga.';
+  $('fNameWrap').classList.toggle('hidden', !!it);
+  $('fAreaWrap').classList.toggle('hidden', !!it);
+  $('fAktifWrap').classList.toggle('hidden', !it);
+  $('fName').value = '';
+  fillSelect($('fArea'), L.area, it ? it.area : '');
+  fillSelect($('fUnit'), L.unit, it ? it.u : '');
+  fillSelect($('fSup'), L.sup, it ? it.sup : '');
+  $('fMin').value = it && it.min !== null ? fmt(it.min) : '';
+  $('fMax').value = it && it.max !== null ? fmt(it.max) : '';
+  $('fKet').value = it ? it.ket : '';
+  $('fAktif').checked = it ? it.aktif : true;
+  $('fStaff').value = load(LS.name);
+  $('fErr').textContent = '';
+  $('msScrim').classList.remove('hidden');
+  if (!it) setTimeout(() => $('fName').focus(), 50);
+}
+$('fBack').onclick = () => $('msScrim').classList.add('hidden');
+$('fGo').onclick = async () => {
+  const isAdd = !state.msEdit;
+  const err = t => { $('fErr').textContent = t; };
+  const staff = $('fStaff').value.trim();
+  const n = $('fName').value.replace(/\s+/g, ' ').trim();
+  const rawMin = $('fMin').value.trim(), rawMax = $('fMax').value.trim();
+  const min = rawMin === '' ? null : num(rawMin), max = rawMax === '' ? null : num(rawMax);
+  if (isAdd && !n) return err('Isi nama item dulu.');
+  if (isAdd && state.ms.items.some(x => x.n.toLowerCase() === n.toLowerCase())) return err(`"${n}" sudah ada di Master Item.`);
+  if (isAdd && !$('fArea').value) return err('Pilih area dulu.');
+  if (!$('fUnit').value) return err('Pilih satuan dulu.');
+  if (!$('fSup').value) return err('Pilih tujuan order dulu.');
+  if ((min !== null && (isNaN(min) || min < 0)) || (max !== null && (isNaN(max) || max < 0))) return err('Min dan Max harus angka 0 atau lebih.');
+  if (min !== null && max !== null && max <= min) return err('Max harus lebih besar dari Min.');
+  if (!staff) return err('Isi nama kamu dulu.');
+  store(LS.name, staff);
+  const item = { n: isAdd ? n : state.msEdit, area: isAdd ? $('fArea').value : '', u: $('fUnit').value, sup: $('fSup').value,
+    min, max, ket: $('fKet').value.trim(), aktif: isAdd ? true : $('fAktif').checked };
+  const btn = $('fGo'); btn.disabled = true; btn.textContent = 'Menyimpan…'; err('');
+  try {
+    const r = await api({ action: 'master_save', data: JSON.stringify({ op: isAdd ? 'add' : 'edit', staff, item }) });
+    $('msScrim').classList.add('hidden');
+    toast(r.msg || 'Tersimpan.');
+    state.ms = await api({ action: 'master_get' });
+    if (state.mode === 'MS') renderMaster();
+    loadDate(state.date).catch(() => {});   // segarkan data opname / masuk di belakang
+  } catch(e){
+    err(e.message);
+    if (/PIN/i.test(e.message)){ $('msScrim').classList.add('hidden'); store(LS.pin, null); showLogin(e.message); }
+  } finally { btn.disabled = false; btn.textContent = 'Simpan'; }
+};
 
 /* ---------- Save ---------- */
 $('btnSave').onclick = () => {
